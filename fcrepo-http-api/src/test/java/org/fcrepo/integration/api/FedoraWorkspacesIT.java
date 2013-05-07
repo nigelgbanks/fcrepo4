@@ -21,8 +21,16 @@ public class FedoraWorkspacesIT extends AbstractResourceIT {
 
 		HttpGet getWs = new HttpGet(serverAddress + "fcr:workspaces/" + name);
 		resp = execute(getWs);
-		assertTrue(resp.getStatusLine().getStatusCode() == 200);
+		assertTrue(resp.getStatusLine().toString(),resp.getStatusLine().getStatusCode() == 200);
 		assertEquals(name, IOUtils.toString(resp.getEntity().getContent()));
+	}
+
+	@Test
+	public void testInvalidWorkspaceGet() throws Exception {
+		String name = "invalidws";
+		HttpGet getWs = new HttpGet(serverAddress + "fcr:workspaces/" + name);
+		HttpResponse resp = execute(getWs);
+		assertTrue(resp.getStatusLine().toString(),resp.getStatusLine().getStatusCode() == 500);
 	}
 
 	@Test
@@ -40,7 +48,7 @@ public class FedoraWorkspacesIT extends AbstractResourceIT {
 		/* TODO: this should fail but the repo still returns the Workspace after the deletion */
 		HttpGet getWs = new HttpGet(serverAddress + "fcr:workspaces/" + name);
 		resp = execute(getWs);
-		assertTrue("Repository returned: " + resp.getStatusLine(), resp.getStatusLine().getStatusCode() == 404);
+		assertTrue("Repository returned: " + resp.getStatusLine(), resp.getStatusLine().getStatusCode() == 500);
 	}
 
 	@Test
