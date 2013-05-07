@@ -36,7 +36,6 @@ public class FedoraWorkspaces extends AbstractResource {
 		final Session sess = getAuthenticatedSession();
 		String name = RandomStringUtils.randomAlphanumeric(16);
 		sess.getWorkspace().createWorkspace(name);
-		sess.save();
 		return Response.status(201).entity(name).build();
 	}
 
@@ -61,7 +60,6 @@ public class FedoraWorkspaces extends AbstractResource {
 			throw new RepositoryException("Unable to delete the default workspace");
 		}
 		sess.getWorkspace().deleteWorkspace(name);
-		sess.save();
 		return Response.ok().build();
 	}
 
