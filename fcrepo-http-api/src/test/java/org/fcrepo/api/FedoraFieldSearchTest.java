@@ -49,6 +49,8 @@ public class FedoraFieldSearchTest {
                         any(HttpServletRequest.class))).thenReturn(mockSession);
         testObj = new FedoraFieldSearch();
         testObj.setSessionFactory(mockSessions);
+        testObj.setSession(mockSession);
+
     }
 
     @After
