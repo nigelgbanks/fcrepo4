@@ -1,11 +1,15 @@
+
 package org.fcrepo.api;
 
+import static com.google.common.collect.ImmutableList.builder;
+import static org.fcrepo.utils.FedoraJcrTypes.FEDORA_OBJECT;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -15,17 +19,21 @@ import javax.ws.rs.core.Response;
 
 import org.fcrepo.AbstractResource;
 import org.fcrepo.exception.InvalidChecksumException;
-import org.fcrepo.utils.FedoraJcrTypes;
+import org.fcrepo.session.InjectedSession;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
-
 @Component
+@Scope("prototype")
 @Path("/rest/{path: .*}/fcr:new")
 public class FedoraUnnamedObjects extends AbstractResource {
+
+    @InjectedSession
+    private Session session;
 
     private static final Logger logger = getLogger(FedoraUnnamedObjects.class);
 
@@ -33,7 +41,7 @@ public class FedoraUnnamedObjects extends AbstractResource {
     FedoraDatastreams datastreamsResource;
 
     @Autowired
-	FedoraNodes objectsResource;
+    FedoraNodes objectsResource;
 
     /**
      * Create an anonymous object with a newly minted name
@@ -45,7 +53,7 @@ public class FedoraUnnamedObjects extends AbstractResource {
     final List<PathSegment> pathList) throws RepositoryException {
         logger.debug("Creating a new unnamed object");
         final String pid = pidMinter.mintPid();
-        PathSegment path = new PathSegment() {
+        final PathSegment path = new PathSegment() {
 
             @Override
             public String getPath() {
@@ -58,18 +66,21 @@ public class FedoraUnnamedObjects extends AbstractResource {
             }
 
         };
-        ImmutableList.Builder<PathSegment> segments = ImmutableList.builder();
+        final ImmutableList.Builder<PathSegment> segments = builder();
         segments.addAll(pathList.subList(0, pathList.size() - 1));
         segments.add(path);
         try {
-            return objectsResource.createObject(
-                    segments.build(), "test label",
-                    FedoraJcrTypes.FEDORA_OBJECT, null, null, null, null);
-        } catch (IOException e) {
+            return objectsResource.createObject(segments.build(), "test label",
+                    FEDORA_OBJECT, null, null, null, session, uriInfo, null);
+        } catch (final IOException e) {
             throw new RepositoryException(e.getMessage(), e);
-        } catch (InvalidChecksumException e) {
+        } catch (final InvalidChecksumException e) {
             throw new RepositoryException(e.getMessage(), e);
         }
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
 }

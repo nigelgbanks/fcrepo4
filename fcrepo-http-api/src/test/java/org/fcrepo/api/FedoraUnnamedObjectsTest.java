@@ -2,6 +2,8 @@
 package org.fcrepo.api;
 
 import static org.fcrepo.test.util.PathSegmentImpl.createPathList;
+import static org.fcrepo.test.util.TestHelpers.mockSession;
+import static org.fcrepo.utils.FedoraJcrTypes.FEDORA_OBJECT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -19,10 +21,11 @@ import javax.jcr.Session;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 import org.fcrepo.exception.InvalidChecksumException;
 import org.fcrepo.identifiers.UUIDPidMinter;
-import org.fcrepo.utils.FedoraJcrTypes;
+import org.fcrepo.test.util.TestHelpers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +41,8 @@ public class FedoraUnnamedObjectsTest {
 
     Session mockSession;
 
+    UriInfo mockUriInfo;
+
     SecurityContext mockSecurityContext;
 
     HttpServletRequest mockServletRequest;
@@ -51,6 +56,10 @@ public class FedoraUnnamedObjectsTest {
         mockObjects = mock(FedoraNodes.class);
         testObj = new FedoraUnnamedObjects();
         testObj.objectsResource = mockObjects;
+        mockSession = mockSession(testObj);
+        mockUriInfo = TestHelpers.getUriInfoImpl();
+        testObj.setUriInfo(mockUriInfo);
+        testObj.setSession(mockSession);
     }
 
     @After
@@ -67,9 +76,8 @@ public class FedoraUnnamedObjectsTest {
         testObj.ingestAndMint(createPathList("objects", "fcr:new"));
         verify(mockMint).mintPid();
         verify(mockObjects).createObject(any(List.class), any(String.class),
-                eq(FedoraJcrTypes.FEDORA_OBJECT), isNull(String.class),
-                isNull(String.class), isNull(MediaType.class),
+                eq(FEDORA_OBJECT), isNull(String.class), isNull(String.class),
+                isNull(MediaType.class), eq(mockSession), eq(mockUriInfo),
                 isNull(InputStream.class));
     }
-
 }

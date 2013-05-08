@@ -1,6 +1,8 @@
 
 package org.fcrepo.integration.api;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.context.web.WebDelegatingSmartContextLoader;
 import java.io.IOException;
@@ -29,7 +31,6 @@ import org.fcrepo.jaxb.responses.management.DatastreamProfile;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -46,7 +47,7 @@ public abstract class AbstractResourceIT {
 
     @Before
     public void setLogger() {
-        logger = LoggerFactory.getLogger(this.getClass());
+        logger = getLogger(this.getClass());
     }
 
     @Before

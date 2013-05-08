@@ -10,9 +10,7 @@
 
     <context:annotation-config />
     
-    <context:component-scan base-package="org.fcrepo.generator, org.fcrepo.api, org.fcrepo.exceptionhandlers"/>
-    
-    <bean class="org.fcrepo.session.SessionFactory" />
+    <context:component-scan base-package="org.fcrepo.generator, org.fcrepo.api, org.fcrepo.session"/>
     
     <!-- Mints PIDs-->
     <bean class="org.fcrepo.identifiers.UUIDPidMinter"/>
