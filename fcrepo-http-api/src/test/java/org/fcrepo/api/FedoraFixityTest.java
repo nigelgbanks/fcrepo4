@@ -1,3 +1,4 @@
+
 package org.fcrepo.api;
 
 import static org.fcrepo.test.util.PathSegmentImpl.createPathList;
@@ -27,56 +28,58 @@ import org.junit.Test;
 import org.modeshape.jcr.api.Repository;
 
 public class FedoraFixityTest {
-	FedoraFixity testObj;
 
-	DatastreamService mockDatastreams;
+    FedoraFixity testObj;
 
-	LowLevelStorageService mockLow;
+    DatastreamService mockDatastreams;
 
-	Repository mockRepo;
+    LowLevelStorageService mockLow;
 
-	Session mockSession;
+    Repository mockRepo;
 
-	SecurityContext mockSecurityContext;
+    Session mockSession;
 
-	HttpServletRequest mockServletRequest;
+    SecurityContext mockSecurityContext;
 
-	Principal mockPrincipal;
+    HttpServletRequest mockServletRequest;
 
-	String mockUser = "testuser";
+    Principal mockPrincipal;
 
-	@Before
-	public void setUp() throws LoginException, RepositoryException {
-		mockDatastreams = mock(DatastreamService.class);
-		mockLow = mock(LowLevelStorageService.class);
+    String mockUser = "testuser";
 
-		testObj = new FedoraFixity();
-		testObj.setDatastreamService(mockDatastreams);
-		testObj.setLlStoreService(mockLow);
+    @Before
+    public void setUp() throws LoginException, RepositoryException {
+        mockDatastreams = mock(DatastreamService.class);
+        mockLow = mock(LowLevelStorageService.class);
+        testObj = new FedoraFixity();
+        testObj.setDatastreamService(mockDatastreams);
+        testObj.setLlStoreService(mockLow);
+        testObj.setUriInfo(TestHelpers.getUriInfoImpl());
+        mockSession = TestHelpers.mockSession(testObj);
+        testObj.setSession(mockSession);
+    }
 
-		testObj.setUriInfo(TestHelpers.getUriInfoImpl());
+    @After
+    public void tearDown() {
 
+    }
 
-		mockSession = TestHelpers.mockSession(testObj);
-	}
-
-	@After
-	public void tearDown() {
-
-	}
-	@Test
-	public void testGetDatastreamFixity() throws RepositoryException,
-														 IOException {
-		final String pid = "FedoraDatastreamsTest1";
-		final String path = "/objects/" + pid + "/testDS";
-		final String dsId = "testDS";
-		final Datastream mockDs = TestHelpers.mockDatastream(pid, dsId, null);
-		Node mockNode = mock(Node.class);
-		when(mockNode.getSession()).thenReturn(mockSession);
-		when(mockDs.getNode()).thenReturn(mockNode);
-		when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(mockDs);
-		final DatastreamFixity actual = testObj.getDatastreamFixity(createPathList("objects", pid, "testDS"));
-		assertNotNull(actual);
-		verify(mockLow).runFixityAndFixProblems(mockDs);
-	}
+    @Test
+    public void testGetDatastreamFixity() throws RepositoryException,
+            IOException {
+        final String pid = "FedoraDatastreamsTest1";
+        final String path = "/objects/" + pid + "/testDS";
+        final String dsId = "testDS";
+        final Datastream mockDs = TestHelpers.mockDatastream(pid, dsId, null);
+        final Node mockNode = mock(Node.class);
+        when(mockNode.getSession()).thenReturn(mockSession);
+        when(mockDs.getNode()).thenReturn(mockNode);
+        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(
+                mockDs);
+        final DatastreamFixity actual =
+                testObj.getDatastreamFixity(createPathList("objects", pid,
+                        "testDS"));
+        assertNotNull(actual);
+        verify(mockLow).runFixityAndFixProblems(mockDs);
+    }
 }

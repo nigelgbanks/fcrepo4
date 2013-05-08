@@ -1,3 +1,4 @@
+
 package org.fcrepo.api;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -21,62 +22,73 @@ import org.fcrepo.Datastream;
 import org.fcrepo.jaxb.responses.management.DatastreamFixity;
 import org.fcrepo.services.DatastreamService;
 import org.fcrepo.services.LowLevelStorageService;
+import org.fcrepo.session.InjectedSession;
 import org.fcrepo.utils.FixityResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.annotation.Timed;
 
 @Component
+@Scope("prototype")
 @Path("/rest/{path: .*}/fcr:fixity")
 public class FedoraFixity extends AbstractResource {
 
-	@Autowired
-	private DatastreamService datastreamService;
+    @InjectedSession
+    private Session session;
 
-	@Autowired
-	private LowLevelStorageService llStoreService;
+    @Autowired
+    private DatastreamService datastreamService;
 
-	@GET
-	@Timed
-	@Produces({TEXT_XML, APPLICATION_JSON})
-	public DatastreamFixity getDatastreamFixity(@PathParam("path")
-												List<PathSegment> pathList) throws RepositoryException {
+    @Autowired
+    private LowLevelStorageService llStoreService;
 
-		final Session session = getAuthenticatedSession();
+    @GET
+    @Timed
+    @Produces({TEXT_XML, APPLICATION_JSON})
+    public DatastreamFixity getDatastreamFixity(@PathParam("path")
+    final List<PathSegment> pathList) throws RepositoryException {
 
-		try {
-			final String path = toPath(pathList);
+        final Session session = getAuthenticatedSession();
 
-			final Datastream ds = datastreamService.getDatastream(session, path);
+        try {
+            final String path = toPath(pathList);
 
-			final DatastreamFixity dsf = new DatastreamFixity();
-			dsf.path = path;
-			dsf.timestamp = new Date();
+            final Datastream ds =
+                    datastreamService.getDatastream(session, path);
 
-			final Collection<FixityResult> blobs =
-					llStoreService.runFixityAndFixProblems(ds);
-			dsf.statuses = new ArrayList<FixityResult>(blobs);
-			return dsf;
-		} finally {
-			session.logout();
-		}
-	}
+            final DatastreamFixity dsf = new DatastreamFixity();
+            dsf.path = path;
+            dsf.timestamp = new Date();
 
-	public DatastreamService getDatastreamService() {
-		return datastreamService;
-	}
+            final Collection<FixityResult> blobs =
+                    llStoreService.runFixityAndFixProblems(ds);
+            dsf.statuses = new ArrayList<FixityResult>(blobs);
+            return dsf;
+        } finally {
+            session.logout();
+        }
+    }
 
-	public void setDatastreamService(final DatastreamService datastreamService) {
-		this.datastreamService = datastreamService;
-	}
+    public DatastreamService getDatastreamService() {
+        return datastreamService;
+    }
 
-	public LowLevelStorageService getLlStoreService() {
-		return llStoreService;
-	}
+    public void setDatastreamService(final DatastreamService datastreamService) {
+        this.datastreamService = datastreamService;
+    }
 
-	public void setLlStoreService(final LowLevelStorageService llStoreService) {
-		this.llStoreService = llStoreService;
-	}
+    public LowLevelStorageService getLlStoreService() {
+        return llStoreService;
+    }
+
+    public void setLlStoreService(final LowLevelStorageService llStoreService) {
+        this.llStoreService = llStoreService;
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
+    }
 
 }
