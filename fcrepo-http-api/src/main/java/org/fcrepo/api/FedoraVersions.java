@@ -1,8 +1,17 @@
 
 package org.fcrepo.api;
 
+import static java.util.Arrays.asList;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.MediaType.TEXT_XML;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static org.joda.time.format.ISODateTimeFormat.dateTime;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -13,7 +22,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,21 +37,24 @@ import org.fcrepo.jaxb.responses.management.DatastreamProfile;
 import org.fcrepo.jaxb.responses.management.DatastreamProfile.DatastreamStates;
 import org.fcrepo.services.DatastreamService;
 import org.fcrepo.services.ObjectService;
+import org.fcrepo.session.InjectedSession;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
+@Scope("prototype")
 @Path("/rest/{path: .*}/fcr:versions")
 public class FedoraVersions extends AbstractResource {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(FedoraVersions.class);
+    private static final Logger logger = getLogger(FedoraVersions.class);
 
-    private DateTimeFormatter jcrDateFormat = ISODateTimeFormat.dateTime();
+    private DateTimeFormatter jcrDateFormat = dateTime();
+
+    @InjectedSession
+    private Session session;
 
     @Autowired
     private DatastreamService datastreamService;
@@ -60,11 +71,10 @@ public class FedoraVersions extends AbstractResource {
     }
 
     @GET
-    @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
+    @Produces({TEXT_XML, APPLICATION_JSON})
     public List<Version> getVersionProfile(@PathParam("path")
     final List<PathSegment> segments) throws RepositoryException {
         final String path = toPath(segments);
-        final Session session = getAuthenticatedSession();
         try {
             final Node node = session.getNode(path);
 
@@ -74,7 +84,7 @@ public class FedoraVersions extends AbstractResource {
                 final Version v =
                         new Version(path, ds.getDsId(), ds.getLabel(), ds
                                 .getCreatedDate());
-                return Arrays.asList(v);
+                return asList(v);
             }
             if (node.isNodeType("nt:folder")) {
                 final FedoraObject obj = objectService.getObject(session, path);
@@ -82,23 +92,22 @@ public class FedoraVersions extends AbstractResource {
                         new Version(path, obj.getName(), obj.getName(),
                                 jcrDateFormat.parseDateTime(obj.getCreated())
                                         .toDate());
-                return Arrays.asList(v);
+                return asList(v);
             }
         } finally {
             session.logout();
         }
 
-        return Arrays.asList();
+        return asList();
     }
 
     @Path("/{id}")
     @GET
-    @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
+    @Produces({TEXT_XML, APPLICATION_XML})
     public Response getVersion(@PathParam("path")
     final List<PathSegment> segments, @PathParam("id")
     final String versionId) throws RepositoryException, IOException {
         final String path = toPath(segments);
-        final Session session = getAuthenticatedSession();
 
         try {
             final Node node = session.getNode(path);
@@ -107,7 +116,7 @@ public class FedoraVersions extends AbstractResource {
                 /* TODO: this should be moved to datastreamservice */
                 final Datastream ds =
                         datastreamService.getDatastream(session, path);
-                return Response.ok(getDSProfile(ds)).build();
+                return ok(getDSProfile(ds)).build();
             }
 
             if (node.isNodeType("nt:folder")) {
@@ -116,11 +125,15 @@ public class FedoraVersions extends AbstractResource {
                         .ok(getObjectProfile(objectService.getObject(session,
                                 path))).build();
             }
+            return status(NOT_FOUND).build();
         } finally {
             session.logout();
         }
 
-        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
     private ObjectProfile getObjectProfile(final FedoraObject object)
