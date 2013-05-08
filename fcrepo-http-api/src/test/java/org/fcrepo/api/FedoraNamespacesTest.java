@@ -53,6 +53,7 @@ public class FedoraNamespacesTest {
                         any(HttpServletRequest.class))).thenReturn(mockSession);
         testObj.setSessionFactory(mockSessions);
         testObj.setPidMinter(new UUIDPidMinter());
+        testObj.setSession(mockSession);
     }
 
     @After
@@ -63,7 +64,8 @@ public class FedoraNamespacesTest {
     @Test
     public void testRegisterObjectNamespace() throws RepositoryException {
         final Response actual =
-                testObj.registerObjectNamespace(TestHelpers.MOCK_PREFIX, TestHelpers.MOCK_URI_STRING);
+                testObj.registerObjectNamespace(TestHelpers.MOCK_PREFIX,
+                        TestHelpers.MOCK_URI_STRING);
         assertNotNull(actual);
         assertEquals(Status.CREATED.getStatusCode(), actual.getStatus());
     }
@@ -81,8 +83,10 @@ public class FedoraNamespacesTest {
 
     @Test
     public void testRetrieveObjectNamespace() throws RepositoryException {
-        testObj.registerObjectNamespace(TestHelpers.MOCK_PREFIX, TestHelpers.MOCK_URI_STRING);
-        final Namespace actual = testObj.retrieveObjectNamespace(TestHelpers.MOCK_PREFIX);
+        testObj.registerObjectNamespace(TestHelpers.MOCK_PREFIX,
+                TestHelpers.MOCK_URI_STRING);
+        final Namespace actual =
+                testObj.retrieveObjectNamespace(TestHelpers.MOCK_PREFIX);
         assertNotNull(actual);
         assertEquals(actual.uri, mockNs.uri);
     }
