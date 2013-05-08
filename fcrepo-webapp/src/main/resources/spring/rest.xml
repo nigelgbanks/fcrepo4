@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:util="http://www.springframework.org/schema/util"
-    xsi:schemaLocation="
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
-
-    <!-- Context that houses JAX-RS Resources that compose the API
+  <!-- Context that houses JAX-RS Resources that compose the API
         as well as som utility gear. -->
-
-    <context:annotation-config/>
-
-    <!-- Mints PIDs-->
-    <bean class="org.fcrepo.identifiers.UUIDPidMinter"/>
-    <bean class="org.fcrepo.session.SessionFactory"/>
-
-    <context:component-scan base-package="org.modeshape.web.jcr.rest, org.fcrepo.api, org.fcrepo.serialization, org.fcrepo.responses, org.fcrepo.exceptionhandlers, org.fcrepo.audit, org.fcrepo.url"/>
-
-  <util:map id="serializers" key-type="java.lang.String" map-class="java.util.HashMap"
-            value-type="org.fcrepo.serialization.FedoraObjectSerializer">
+  <context:annotation-config/>
+  <!-- Mints PIDs-->
+  <bean class="org.fcrepo.identifiers.UUIDPidMinter"/>
+  <bean class="org.fcrepo.session.SessionFactory"/>
+  <context:component-scan
+    base-package="org.modeshape.web.jcr.rest, org.fcrepo.api, org.fcrepo.serialization, org.fcrepo.responses, org.fcrepo.exceptionhandlers, org.fcrepo.audit, org.fcrepo.url, org.fcrepo.session"/>
+  <util:map id="serializers" key-type="java.lang.String" map-class="java.util.HashMap" value-type="org.fcrepo.serialization.FedoraObjectSerializer">
     <description>Map from formats to serializers for Fedora objects</description>
     <entry key="jcr/xml">
       <bean class="org.fcrepo.serialization.jcrxml.JcrXmlSerializer"/>

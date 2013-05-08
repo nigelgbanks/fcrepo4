@@ -9,7 +9,6 @@
   <artifactId>fcrepo-http-commons</artifactId>
   <name>Fedora HTTP Commons</name>
   <description>HTTP (JAX-RS) resources and helpers.</description>
-
   <dependencies>
     <dependency>
       <groupId>joda-time</groupId>
@@ -66,13 +65,15 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
-    
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>
     </dependency>
-    
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.sun.grizzly</groupId>
       <artifactId>grizzly-servlet-webserver</artifactId>
@@ -119,7 +120,6 @@
       <version>1.7</version>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
