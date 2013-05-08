@@ -27,13 +27,16 @@ import org.fcrepo.jaxb.responses.sitemap.SitemapEntry;
 import org.fcrepo.jaxb.responses.sitemap.SitemapIndex;
 import org.fcrepo.jaxb.responses.sitemap.SitemapUrlSet;
 import org.fcrepo.services.ObjectService;
+import org.fcrepo.session.InjectedSession;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.annotation.Timed;
 
 @Component
+@Scope("prototype")
 @Path("/rest/sitemap")
 public class FedoraSitemap extends AbstractResource {
 
@@ -41,11 +44,14 @@ public class FedoraSitemap extends AbstractResource {
 
     public static final long entriesPerPage = 50000;
 
+    @InjectedSession
+    private Session session;
+
     @Autowired
     private ObjectService objectService;
 
     @GET
-	@Timed
+    @Timed
     @Produces(TEXT_XML)
     public SitemapIndex getSitemapIndex() throws RepositoryException {
         logger.trace("Executing getSitemapIndex()...");
@@ -73,7 +79,7 @@ public class FedoraSitemap extends AbstractResource {
 
     @GET
     @Path("/{page}")
-	@Timed
+    @Timed
     @Produces(TEXT_XML)
     public SitemapUrlSet getSitemap(@PathParam("page")
     final String page) throws RepositoryException {
@@ -122,18 +128,22 @@ public class FedoraSitemap extends AbstractResource {
             throws RepositoryException {
         Value lkDateValue = r.getValue("jcr:lastModified");
         if (lkDateValue == null) {
-            logger.warn("no value for jcr:lastModified on {}", r.getNode().getPath());
+            logger.warn("no value for jcr:lastModified on {}", r.getNode()
+                    .getPath());
             lkDateValue = r.getValue("jcr:created");
         }
-        Calendar lastKnownDate = (lkDateValue != null) ? lkDateValue.getDate() : null;
+        final Calendar lastKnownDate =
+                (lkDateValue != null) ? lkDateValue.getDate() : null;
         return new SitemapEntry(uriInfo.getBaseUriBuilder().path(
-                FedoraNodes.class)
-                .build(r.getNode().getName()), lastKnownDate);
+                FedoraNodes.class).build(r.getNode().getName()), lastKnownDate);
     }
 
-    
-    public void setObjectService(ObjectService objectService) {
+    public void setObjectService(final ObjectService objectService) {
         this.objectService = objectService;
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
 }

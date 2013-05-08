@@ -58,30 +58,33 @@ public class FedoraRepository extends AbstractResource {
     @Path("modeshape")
     @Timed
     public Response describeModeshape() throws IOException, RepositoryException {
-        final Session session = getAuthenticatedSession();
-        logger.debug("Repository name: " + repo.getDescriptor(REP_NAME_DESC));
-        final Builder<String, Object> repoproperties = builder();
-        for (final String key : repo.getDescriptorKeys()) {
-            if (repo.getDescriptor(key) != null) {
-                repoproperties.put(key, repo.getDescriptor(key));
+        try {
+            logger.debug("Repository name: " +
+                    repo.getDescriptor(REP_NAME_DESC));
+            final Builder<String, Object> repoproperties = builder();
+            for (final String key : repo.getDescriptorKeys()) {
+                if (repo.getDescriptor(key) != null) {
+                    repoproperties.put(key, repo.getDescriptor(key));
+                }
             }
-        }
 
-        // add in node namespaces
-        final Builder<String, String> namespaces = builder();
-        namespaces.putAll(objectService.getRepositoryNamespaces(session));
-        repoproperties.put("node.namespaces", namespaces.build());
+            // add in node namespaces
+            final Builder<String, String> namespaces = builder();
+            namespaces.putAll(objectService.getRepositoryNamespaces(session));
+            repoproperties.put("node.namespaces", namespaces.build());
 
-        // add in node types
-        final Builder<String, String> nodetypes = builder();
-        final NodeTypeIterator i = objectService.getAllNodeTypes(session);
-        while (i.hasNext()) {
-            final NodeType nt = i.nextNodeType();
-            nodetypes.put(nt.getName(), nt.toString());
+            // add in node types
+            final Builder<String, String> nodetypes = builder();
+            final NodeTypeIterator i = objectService.getAllNodeTypes(session);
+            while (i.hasNext()) {
+                final NodeType nt = i.nextNodeType();
+                nodetypes.put(nt.getName(), nt.toString());
+            }
+            repoproperties.put("node.types", nodetypes.build());
+            return ok(repoproperties.build().toString()).build();
+        } finally {
+            session.logout();
         }
-        repoproperties.put("node.types", nodetypes.build());
-        session.logout();
-        return ok(repoproperties.build().toString()).build();
     }
 
     @GET
@@ -89,23 +92,24 @@ public class FedoraRepository extends AbstractResource {
     @Produces({TEXT_XML, APPLICATION_XML, APPLICATION_JSON})
     public DescribeRepository describe() throws RepositoryException {
 
-        final Session session = getAuthenticatedSession();
-        final DescribeRepository description = new DescribeRepository();
-        description.repositoryBaseURL = uriInfo.getBaseUri();
-        description.sampleOAIURL =
-                uriInfo.getBaseUriBuilder().path("/123/oai_dc").build();
-        description.repositorySize = objectService.getRepositorySize();
-        description.numberOfObjects =
-                objectService.getRepositoryObjectCount(session);
+        try {
+            final DescribeRepository description = new DescribeRepository();
+            description.repositoryBaseURL = uriInfo.getBaseUri();
+            description.sampleOAIURL =
+                    uriInfo.getBaseUriBuilder().path("/123/oai_dc").build();
+            description.repositorySize = objectService.getRepositorySize();
+            description.numberOfObjects =
+                    objectService.getRepositoryObjectCount(session);
 
-        final Map<String, String> clusterConfig = getClusterConfig();
-        if (clusterConfig != null) {
-            description.setClusterConfiguration(new DescribeCluster(
-                    clusterConfig));
+            final Map<String, String> clusterConfig = getClusterConfig();
+            if (clusterConfig != null) {
+                description.setClusterConfiguration(new DescribeCluster(
+                        clusterConfig));
+            }
+            return description;
+        } finally {
+            session.logout();
         }
-
-        session.logout();
-        return description;
     }
 
     /**

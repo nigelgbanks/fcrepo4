@@ -40,6 +40,7 @@ public class FedoraSitemapTest {
                 mockSessions.getSession(any(SecurityContext.class),
                         any(HttpServletRequest.class))).thenReturn(mockSession);
         testObj.setSessionFactory(mockSessions);
+        testObj.setSession(mockSession);
         testObj.setUriInfo(TestHelpers.getUriInfoImpl());
     }
 
@@ -67,4 +68,5 @@ public class FedoraSitemapTest {
 
         assertEquals(2, sitemapIndex.getSitemapEntries().size());
     }
+
 }
