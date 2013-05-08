@@ -88,7 +88,7 @@ public class FedoraDatastreamsTest {
         when(mockSession.getUserID()).thenReturn(mockUser);
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockPrincipal.getName()).thenReturn(mockUser);
-
+        testObj.setSession(mockSession);
         testObj.setUriInfo(TestHelpers.getUriInfoImpl());
     }
 
@@ -104,8 +104,10 @@ public class FedoraDatastreamsTest {
         final String dsid = "testDS";
         final DatastreamIterator mockIter =
                 TestHelpers.mockDatastreamIterator(pid, dsid, "asdf");
-        when(mockDatastreams.getDatastreamsForPath(mockSession, path)).thenReturn(mockIter);
-        final ObjectDatastreams actual = testObj.getDatastreams(createPathList("objects",pid));
+        when(mockDatastreams.getDatastreamsForPath(mockSession, path))
+                .thenReturn(mockIter);
+        final ObjectDatastreams actual =
+                testObj.getDatastreams(createPathList("objects", pid));
         verify(mockDatastreams).getDatastreamsForPath(mockSession, path);
         verify(mockSession, never()).save();
         assertEquals(1, actual.datastreams.size());
@@ -123,8 +125,8 @@ public class FedoraDatastreamsTest {
         atts.put(dsId2, "sdfg");
         final MultiPart multipart = TestHelpers.getStringsAsMultipart(atts);
         final Response actual =
-                testObj.modifyDatastreams(createPathList(pid), Arrays.asList(new String[] {
-                        dsId1, dsId2}), multipart);
+                testObj.modifyDatastreams(createPathList(pid), Arrays
+                        .asList(new String[] {dsId1, dsId2}), multipart);
         assertEquals(Status.CREATED.getStatusCode(), actual.getStatus());
         verify(mockDatastreams).createDatastreamNode(any(Session.class),
                 eq("/" + pid + "/" + dsId1), anyString(),
@@ -141,10 +143,13 @@ public class FedoraDatastreamsTest {
         final String path = "/" + pid;
         final List<String> dsidList =
                 Arrays.asList(new String[] {"ds1", "ds2"});
-        final Response actual = testObj.deleteDatastreams(createPathList(pid), dsidList);
+        final Response actual =
+                testObj.deleteDatastreams(createPathList(pid), dsidList);
         assertEquals(Status.NO_CONTENT.getStatusCode(), actual.getStatus());
-        verify(mockDatastreams).purgeDatastream(mockSession, path + "/" + "ds1");
-        verify(mockDatastreams).purgeDatastream(mockSession, path + "/" + "ds2");
+        verify(mockDatastreams)
+                .purgeDatastream(mockSession, path + "/" + "ds1");
+        verify(mockDatastreams)
+                .purgeDatastream(mockSession, path + "/" + "ds2");
         verify(mockSession).save();
     }
 
@@ -153,10 +158,12 @@ public class FedoraDatastreamsTest {
             IOException {
         final String pid = "FedoraDatastreamsTest1";
         final String dsId = "testDS";
-		final String path = "/" + pid + "/" + dsId;
+        final String path = "/" + pid + "/" + dsId;
         final String dsContent = "asdf";
-        final Datastream mockDs = TestHelpers.mockDatastream(pid, dsId, dsContent);
-        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(mockDs);
+        final Datastream mockDs =
+                TestHelpers.mockDatastream(pid, dsId, dsContent);
+        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(
+                mockDs);
 
         final Response resp =
                 testObj.getDatastreamsContents(createPathList(pid), Arrays
@@ -176,15 +183,15 @@ public class FedoraDatastreamsTest {
             IOException {
         final String pid = "FedoraDatastreamsTest1";
         final String dsId = "testDS";
-		final String path = "/" + pid + "/" + dsId;
+        final String path = "/" + pid + "/" + dsId;
         final Datastream mockDs = TestHelpers.mockDatastream(pid, dsId, null);
-        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(mockDs);
+        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(
+                mockDs);
         final DatastreamHistory actual =
                 testObj.getDatastreamHistory(createPathList(pid), dsId);
         assertNotNull(actual);
         verify(mockDatastreams).getDatastream(mockSession, path);
         verify(mockSession, never()).save();
     }
-
 
 }

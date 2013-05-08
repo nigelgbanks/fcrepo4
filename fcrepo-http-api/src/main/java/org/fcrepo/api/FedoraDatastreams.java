@@ -41,8 +41,10 @@ import org.fcrepo.jaxb.responses.management.DatastreamHistory;
 import org.fcrepo.jaxb.responses.management.DatastreamProfile;
 import org.fcrepo.services.DatastreamService;
 import org.fcrepo.services.LowLevelStorageService;
+import org.fcrepo.session.InjectedSession;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.annotation.Timed;
@@ -52,8 +54,12 @@ import com.sun.jersey.multipart.BodyPartEntity;
 import com.sun.jersey.multipart.MultiPart;
 
 @Component
+@Scope("prototype")
 @Path("/rest/{path: .*}/fcr:datastreams")
 public class FedoraDatastreams extends AbstractResource {
+
+    @InjectedSession
+    private Session session;
 
     private final Logger logger = getLogger(FedoraDatastreams.class);
 
@@ -79,21 +85,19 @@ public class FedoraDatastreams extends AbstractResource {
     public ObjectDatastreams getDatastreams(@PathParam("path")
     final List<PathSegment> pathList) throws RepositoryException, IOException {
 
-		final Session session = getAuthenticatedSession();
+        try {
+            final String path = toPath(pathList);
+            logger.info("getting datastreams of {}", path);
+            final ObjectDatastreams objectDatastreams = new ObjectDatastreams();
 
-		try {
-			final String path = toPath(pathList);
-			logger.info("getting datastreams of {}", path);
-			final ObjectDatastreams objectDatastreams = new ObjectDatastreams();
+            objectDatastreams.datastreams =
+                    copyOf(transform(datastreamService.getDatastreamsForPath(
+                            session, path), ds2dsElement));
 
-			objectDatastreams.datastreams =
-					copyOf(transform(datastreamService
-							.getDatastreamsForPath(session, path), ds2dsElement));
-
-			return objectDatastreams;
-		} finally {
-			session.logout();
-		}
+            return objectDatastreams;
+        } finally {
+            session.logout();
+        }
 
     }
 
@@ -104,7 +108,6 @@ public class FedoraDatastreams extends AbstractResource {
     final List<String> dsidList, final MultiPart multipart)
             throws RepositoryException, IOException, InvalidChecksumException {
 
-        final Session session = getAuthenticatedSession();
         final String path = toPath(pathList);
         try {
             for (final String dsid : dsidList) {
@@ -117,7 +120,7 @@ public class FedoraDatastreams extends AbstractResource {
                         part.getContentDisposition().getParameters()
                                 .get("name");
                 logger.debug("Adding datastream: " + dsid);
-                final String dsPath = path + "/" +  dsid;
+                final String dsPath = path + "/" + dsid;
                 final Object obj = part.getEntity();
                 InputStream src = null;
                 if (obj instanceof BodyPartEntity) {
@@ -137,19 +140,17 @@ public class FedoraDatastreams extends AbstractResource {
             session.logout();
         }
     }
-    
+
     @DELETE
     @Timed
-    public Response deleteDatastreams(
-            @PathParam("path") final List<PathSegment> pathList,
-            @QueryParam("dsid") final List<String> dsidList
-            ) throws RepositoryException {
-        final Session session = getAuthenticatedSession();
+    public Response deleteDatastreams(@PathParam("path")
+    final List<PathSegment> pathList, @QueryParam("dsid")
+    final List<String> dsidList) throws RepositoryException {
         try {
-            String path = toPath(pathList);
+            final String path = toPath(pathList);
             for (final String dsid : dsidList) {
-                logger.debug("purging datastream {}", path  + "/" +  dsid);
-                datastreamService.purgeDatastream(session, path  + "/" +  dsid);
+                logger.debug("purging datastream {}", path + "/" + dsid);
+                datastreamService.purgeDatastream(session, path + "/" + dsid);
             }
             session.save();
             return noContent().build();
@@ -163,39 +164,40 @@ public class FedoraDatastreams extends AbstractResource {
     @Produces("multipart/mixed")
     @Timed
     public Response getDatastreamsContents(@PathParam("path")
-    List<PathSegment> pathList, @QueryParam("dsid")
+    final List<PathSegment> pathList, @QueryParam("dsid")
     final List<String> dsids) throws RepositoryException, IOException {
 
-		final Session session = getAuthenticatedSession();
+        try {
+            final String path = toPath(pathList);
+            if (dsids.isEmpty()) {
+                final NodeIterator ni =
+                        objectService.getObject(session, path).getNode()
+                                .getNodes();
+                while (ni.hasNext()) {
+                    dsids.add(ni.nextNode().getName());
+                }
+            }
 
-		try {
-			String path = toPath(pathList);
-			if (dsids.isEmpty()) {
-				final NodeIterator ni = objectService.getObject(session, path).getNode().getNodes();
-				while (ni.hasNext()) {
-					dsids.add(ni.nextNode().getName());
-				}
-			}
+            final MultiPart multipart = new MultiPart();
 
-			final MultiPart multipart = new MultiPart();
+            final Iterator<String> i = dsids.iterator();
+            while (i.hasNext()) {
+                final String dsid = i.next();
 
-			final Iterator<String> i = dsids.iterator();
-			while (i.hasNext()) {
-				final String dsid = i.next();
+                try {
+                    final Datastream ds =
+                            datastreamService.getDatastream(session, path +
+                                    "/" + dsid);
+                    multipart.bodyPart(ds.getContent(), MediaType.valueOf(ds
+                            .getMimeType()));
+                } catch (final PathNotFoundException e) {
 
-				try {
-					final Datastream ds =
-							datastreamService.getDatastream(session, path  + "/" +  dsid);
-					multipart.bodyPart(ds.getContent(), MediaType.valueOf(ds
-							.getMimeType()));
-				} catch (final PathNotFoundException e) {
-
-				}
-			}
-			return Response.ok(multipart, MULTIPART_FORM_DATA).build();
-		} finally {
-			session.logout();
-		}
+                }
+            }
+            return Response.ok(multipart, MULTIPART_FORM_DATA).build();
+        } finally {
+            session.logout();
+        }
     }
 
     /**
@@ -215,22 +217,22 @@ public class FedoraDatastreams extends AbstractResource {
     @Timed
     @Produces({TEXT_XML, APPLICATION_JSON})
     public DatastreamHistory getDatastreamHistory(@PathParam("path")
-    List<PathSegment> pathList, @PathParam("dsid")
+    final List<PathSegment> pathList, @PathParam("dsid")
     final String dsId) throws RepositoryException, IOException {
-		final Session session = getAuthenticatedSession();
 
-		try {
-			String path = toPath(pathList);
-			// TODO implement this after deciding on a versioning model
-			final Datastream ds = datastreamService.getDatastream(session, path  + "/" +  dsId);
-			final DatastreamHistory dsHistory =
-					new DatastreamHistory(singletonList(getDSProfile(ds)));
-			dsHistory.dsID = dsId;
-			dsHistory.pid = pathList.get(pathList.size() - 1).getPath();
-			return dsHistory;
-		} finally {
-			session.logout();
-		}
+        try {
+            final String path = toPath(pathList);
+            // TODO implement this after deciding on a versioning model
+            final Datastream ds =
+                    datastreamService.getDatastream(session, path + "/" + dsId);
+            final DatastreamHistory dsHistory =
+                    new DatastreamHistory(singletonList(getDSProfile(ds)));
+            dsHistory.dsID = dsId;
+            dsHistory.pid = pathList.get(pathList.size() - 1).getPath();
+            return dsHistory;
+        } finally {
+            session.logout();
+        }
     }
 
     private DatastreamProfile getDSProfile(final Datastream ds)
@@ -263,7 +265,7 @@ public class FedoraDatastreams extends AbstractResource {
                         return new DatastreamElement(ds.getDsId(),
                                 ds.getDsId(), ds.getMimeType());
                     } catch (final RepositoryException e) {
-                        throw new IllegalStateException(e);
+                        throw new RuntimeException(e);
                     }
                 }
             };
@@ -282,6 +284,10 @@ public class FedoraDatastreams extends AbstractResource {
 
     public void setLlStoreService(final LowLevelStorageService llStoreService) {
         this.llStoreService = llStoreService;
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
 }
