@@ -52,6 +52,7 @@ public class FedoraRepositoryTest {
                 mockSessions.getSession(any(SecurityContext.class),
                         any(HttpServletRequest.class))).thenReturn(mockSession);
         testFedoraRepo.setSessionFactory(mockSessions);
+        testFedoraRepo.setSession(mockSession);
         when(mockRepo.getDescriptorKeys()).thenReturn(new String[0]);
         when(mockObjects.getRepositoryNamespaces(mockSession)).thenReturn(
                 new HashMap<String, String>(0));

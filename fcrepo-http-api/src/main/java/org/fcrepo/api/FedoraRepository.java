@@ -29,16 +29,22 @@ import org.fcrepo.jaxb.responses.access.DescribeRepository;
 import org.fcrepo.provider.VelocityViewer;
 import org.fcrepo.services.ObjectService;
 import org.fcrepo.services.functions.GetClusterConfiguration;
+import org.fcrepo.session.InjectedSession;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.ImmutableMap.Builder;
 
 @Component
+@Scope("prototype")
 @Path("/rest/fcr:describe")
 public class FedoraRepository extends AbstractResource {
+
+    @InjectedSession
+    private Session session;
 
     private static final Logger logger = getLogger(FedoraRepository.class);
 
@@ -50,7 +56,7 @@ public class FedoraRepository extends AbstractResource {
 
     @GET
     @Path("modeshape")
-	@Timed
+    @Timed
     public Response describeModeshape() throws IOException, RepositoryException {
         final Session session = getAuthenticatedSession();
         logger.debug("Repository name: " + repo.getDescriptor(REP_NAME_DESC));
@@ -79,7 +85,7 @@ public class FedoraRepository extends AbstractResource {
     }
 
     @GET
-	@Timed
+    @Timed
     @Produces({TEXT_XML, APPLICATION_XML, APPLICATION_JSON})
     public DescribeRepository describe() throws RepositoryException {
 
@@ -87,15 +93,15 @@ public class FedoraRepository extends AbstractResource {
         final DescribeRepository description = new DescribeRepository();
         description.repositoryBaseURL = uriInfo.getBaseUri();
         description.sampleOAIURL =
-                uriInfo.getBaseUriBuilder().path("/123/oai_dc")
-                        .build();
+                uriInfo.getBaseUriBuilder().path("/123/oai_dc").build();
         description.repositorySize = objectService.getRepositorySize();
         description.numberOfObjects =
                 objectService.getRepositoryObjectCount(session);
 
-        Map<String, String> clusterConfig = getClusterConfig();
-        if(clusterConfig != null) {
-        	description.setClusterConfiguration(new DescribeCluster(clusterConfig));
+        final Map<String, String> clusterConfig = getClusterConfig();
+        if (clusterConfig != null) {
+            description.setClusterConfiguration(new DescribeCluster(
+                    clusterConfig));
         }
 
         session.logout();
@@ -107,15 +113,15 @@ public class FedoraRepository extends AbstractResource {
      * @return
      */
     public Map<String, String> getClusterConfig() {
-		//get infinispan binarystore and cachemanager to set cluster configuration information
-		GetClusterConfiguration getClusterConfig =
-				new GetClusterConfiguration();
-		Map<String, String> result = getClusterConfig.apply(repo);
-		return result;
+        //get infinispan binarystore and cachemanager to set cluster configuration information
+        final GetClusterConfiguration getClusterConfig =
+                new GetClusterConfiguration();
+        final Map<String, String> result = getClusterConfig.apply(repo);
+        return result;
     }
 
     @GET
-	@Timed
+    @Timed
     @Produces(TEXT_HTML)
     public String describeHtml() throws RepositoryException {
 
@@ -131,9 +137,12 @@ public class FedoraRepository extends AbstractResource {
         this.repo = repo;
     }
 
-
-    public void setObjectService(ObjectService objectService) {
+    public void setObjectService(final ObjectService objectService) {
         this.objectService = objectService;
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
 }
