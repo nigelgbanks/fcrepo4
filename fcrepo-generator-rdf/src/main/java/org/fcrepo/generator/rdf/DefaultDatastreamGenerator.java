@@ -15,6 +15,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.fcrepo.Datastream;
 import org.slf4j.Logger;
+
 import com.google.common.base.Function;
 
 public class DefaultDatastreamGenerator implements TripleSource<Datastream> {

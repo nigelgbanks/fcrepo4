@@ -13,7 +13,9 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.modeshape.jcr.api.ServletCredentials;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SessionFactory {
 
     private static final Logger logger = getLogger(SessionFactory.class);

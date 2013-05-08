@@ -1,3 +1,4 @@
+
 package org.fcrepo.generator.rdf;
 
 import static org.junit.Assert.assertEquals;
@@ -25,33 +26,36 @@ import org.powermock.modules.junit4.PowerMockRunner;
 public class PropertiesGeneratorTest {
 
     private PropertiesGenerator testObj;
-    
+
     @Before
     public void setUp() {
         testObj = new PropertiesGenerator();
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Test
     public void testGetTriples() throws RepositoryException {
-        String path = "/testing/fake/object";
-        UriInfo mockUris = mock(UriInfo.class);
-        Node mockNode = mock(Node.class);
+        final String path = "/testing/fake/object";
+        final UriInfo mockUris = mock(UriInfo.class);
+        final Node mockNode = mock(Node.class);
         when(mockNode.getPath()).thenReturn(path);
-        Property mockProp = mock(Property.class);
+        final Property mockProp = mock(Property.class);
         when(mockProp.getParent()).thenReturn(mockNode);
         when(mockProp.getString()).thenReturn("mockValue");
-        PropertyIterator mockProps = mock(PropertyIterator.class);
+        final PropertyIterator mockProps = mock(PropertyIterator.class);
         when(mockProps.hasNext()).thenReturn(true, false);
-        when(mockProps.next()).thenReturn(mockProp).thenThrow(IndexOutOfBoundsException.class);
+        when(mockProps.next()).thenReturn(mockProp).thenThrow(
+                IndexOutOfBoundsException.class);
         when(mockNode.getProperties()).thenReturn(mockProps);
 
         // mock the static method on Utils
         PowerMockito.mockStatic(Utils.class);
-        when(Utils.expandJCRNamespace(mockProp)).thenReturn("{http://fcrepo.co.uk/test/}property");
+        when(Utils.expandJCRNamespace(mockProp)).thenReturn(
+                "{http://fcrepo.co.uk/test/}property");
 
-        List<Triple> triples = testObj.getTriples(mockNode, mockUris);
+        final List<Triple> triples = testObj.getTriples(mockNode, mockUris);
         assertEquals(1, triples.size());
-        Triple t = triples.get(0);
+        final Triple t = triples.get(0);
         assertEquals("{http://fcrepo.co.uk/test/}property", t.predicate);
         assertEquals("mockValue", t.object);
     }

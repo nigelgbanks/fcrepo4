@@ -1,12 +1,9 @@
 
 package org.fcrepo.integration.generator;
 
-import static java.util.regex.Pattern.DOTALL;
-import static java.util.regex.Pattern.compile;
 import static javax.ws.rs.core.MediaType.TEXT_XML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.fcrepo.test.util.PathSegmentImpl.createPathList;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -31,10 +28,13 @@ public class RdfGeneratorIT extends AbstractResourceIT {
         assertEquals(200, response.getStatusLine().getStatusCode());
 
         final String content = EntityUtils.toString(response.getEntity());
-logger.debug(content);
-        String rdfAbout = "rdf:about=\"" + getRdfMethod.getURI().toString().replace("/fcr:rdf","") + "\""; 
-        assertTrue("Didn't find identifier: " + rdfAbout,
-                content.contains(rdfAbout));
+        logger.debug(content);
+        final String rdfAbout =
+                "rdf:about=\"" +
+                        getRdfMethod.getURI().toString()
+                                .replace("/fcr:rdf", "") + "\"";
+        assertTrue("Didn't find identifier: " + rdfAbout, content
+                .contains(rdfAbout));
         logger.debug("Finished testXMLObjectTriples().");
 
     }
@@ -52,9 +52,12 @@ logger.debug(content);
 
         final String content = EntityUtils.toString(response.getEntity());
 
-        String rdfAbout = "rdf:about=\"" + getRdfMethod.getURI().toString().replace("/fcr:rdf","") + "\""; 
-        assertTrue("Didn't find identifier: " + rdfAbout,
-                content.contains(rdfAbout));
+        final String rdfAbout =
+                "rdf:about=\"" +
+                        getRdfMethod.getURI().toString()
+                                .replace("/fcr:rdf", "") + "\"";
+        assertTrue("Didn't find identifier: " + rdfAbout, content
+                .contains(rdfAbout));
         logger.debug("Finished testNTriplesObjectTriples().");
     }
 
@@ -72,9 +75,11 @@ logger.debug(content);
 
         final String content = EntityUtils.toString(response.getEntity());
 
-        String rdfAbout = "<" + getRdfMethod.getURI().toString().replace("/fcr:rdf","") + ">"; 
-        assertTrue("Didn't find identifier: " + rdfAbout,
-                content.contains(rdfAbout));
+        final String rdfAbout =
+                "<" + getRdfMethod.getURI().toString().replace("/fcr:rdf", "") +
+                        ">";
+        assertTrue("Didn't find identifier: " + rdfAbout, content
+                .contains(rdfAbout));
         logger.debug("Finished testTurtleObjectTriples().");
     }
 
@@ -85,20 +90,20 @@ logger.debug(content);
         client.execute(postObjMethod("RdfTest4"));
         client.execute(postDSMethod("RdfTest4", "testDS", "foobar"));
         final HttpGet getRdfMethod =
-                new HttpGet(serverAddress +
-                        "objects/RdfTest4/testDS/fcr:rdf");
+                new HttpGet(serverAddress + "objects/RdfTest4/testDS/fcr:rdf");
         getRdfMethod.setHeader("Accept", TEXT_XML);
         final HttpResponse response = client.execute(getRdfMethod);
-        int status = response.getStatusLine().getStatusCode();
+        final int status = response.getStatusLine().getStatusCode();
         final String content = EntityUtils.toString(response.getEntity());
-        if (status != 200) {
-            logger.error(content);
-        }
+        logger.debug("Retrieved from: {} \n{}", getRdfMethod.getURI(), content);
         assertEquals(200, status);
 
-        String rdfAbout = "rdf:about=\"" + getRdfMethod.getURI().toString().replace("/fcr:rdf","") + "\""; 
-        assertTrue("Didn't find identifier: " + rdfAbout,
-                content.contains(rdfAbout));
+        final String rdfAbout =
+                "rdf:about=\"" +
+                        getRdfMethod.getURI().toString()
+                                .replace("/fcr:rdf", "") + "\"";
+        assertTrue("Didn't find identifier: " + rdfAbout, content
+                .contains(rdfAbout));
         logger.debug("Finished testXMLDSTriples().");
 
     }

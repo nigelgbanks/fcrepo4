@@ -80,7 +80,7 @@ public class FedoraContentTest {
         when(mockSession.getUserID()).thenReturn(mockUser);
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockPrincipal.getName()).thenReturn(mockUser);
-
+        testObj.setSession(mockSession);
         testObj.setUriInfo(TestHelpers.getUriInfoImpl());
     }
 
@@ -99,7 +99,8 @@ public class FedoraContentTest {
         final InputStream dsContentStream = IOUtils.toInputStream(dsContent);
         when(mockDatastreams.exists(mockSession, dsPath)).thenReturn(true);
         final Response actual =
-                testObj.modifyContent(createPathList(pid, dsId), null, dsContentStream);
+                testObj.modifyContent(createPathList(pid, dsId), null,
+                        dsContentStream);
         assertEquals(Status.CREATED.getStatusCode(), actual.getStatus());
         verify(mockDatastreams).createDatastreamNode(any(Session.class),
                 eq(dsPath), anyString(), any(InputStream.class));
@@ -107,14 +108,15 @@ public class FedoraContentTest {
     }
 
     @Test
-    public void testGetContent() throws RepositoryException,
-            IOException {
+    public void testGetContent() throws RepositoryException, IOException {
         final String pid = "FedoraDatastreamsTest1";
-		final String dsId = "testDS";
+        final String dsId = "testDS";
         final String path = "/" + pid + "/" + dsId;
         final String dsContent = "asdf";
-        final Datastream mockDs = TestHelpers.mockDatastream(pid, dsId, dsContent);
-        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(mockDs);
+        final Datastream mockDs =
+                TestHelpers.mockDatastream(pid, dsId, dsContent);
+        when(mockDatastreams.getDatastream(mockSession, path)).thenReturn(
+                mockDs);
         final Request mockRequest = mock(Request.class);
         final Response actual =
                 testObj.getContent(createPathList(pid, dsId), mockRequest);

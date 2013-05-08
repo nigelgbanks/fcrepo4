@@ -2,24 +2,11 @@ package org.fcrepo.generator.rdf;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.concat;
-import static org.slf4j.LoggerFactory.getLogger;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.ws.rs.core.UriBuilderException;
-import javax.ws.rs.core.UriInfo;
-
-import org.fcrepo.Datastream;
-import org.slf4j.Logger;
-import com.google.common.base.Function;
-
 import java.util.List;
 
 import javax.jcr.Node;
