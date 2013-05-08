@@ -1,6 +1,8 @@
 
 package org.fcrepo.integration.api;
 
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.context.web.WebDelegatingSmartContextLoader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
@@ -32,14 +34,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/spring-test/test-container.xml")
+@WebAppConfiguration
+@ContextConfiguration(locations = {"/spring-test/test-container.xml"}, loader = WebDelegatingSmartContextLoader.class)
 public abstract class AbstractResourceIT {
 
     protected Logger logger;
 
     protected JAXBContext context;
 
-	protected String OBJECT_PATH = "objects";
+    protected String OBJECT_PATH = "objects";
 
     @Before
     public void setLogger() {
@@ -90,15 +93,15 @@ public abstract class AbstractResourceIT {
     protected static HttpPost postDSMethod(final String pid, final String ds,
             final String content) throws UnsupportedEncodingException {
         final HttpPost post =
-                new HttpPost(serverAddress + "objects/" + pid +
-                        "/" + ds + "/fcr:content");
+                new HttpPost(serverAddress + "objects/" + pid + "/" + ds +
+                        "/fcr:content");
         post.setEntity(new StringEntity(content));
         return post;
     }
 
     protected static HttpPut putDSMethod(final String pid, final String ds) {
-        return new HttpPut(serverAddress + "objects/" + pid + 
-                "/" + ds + "/fcr:content");
+        return new HttpPut(serverAddress + "objects/" + pid + "/" + ds +
+                "/fcr:content");
     }
 
     protected HttpResponse execute(final HttpUriRequest method)
@@ -110,9 +113,9 @@ public abstract class AbstractResourceIT {
 
     protected int getStatus(final HttpUriRequest method)
             throws ClientProtocolException, IOException {
-        HttpResponse response = execute(method);
-        int result = response.getStatusLine().getStatusCode();
-        if (!(result > 199) || !(result < 400)){
+        final HttpResponse response = execute(method);
+        final int result = response.getStatusLine().getStatusCode();
+        if (!(result > 199) || !(result < 400)) {
             logger.warn(EntityUtils.toString(response.getEntity()));
         }
         return result;

@@ -1,3 +1,4 @@
+
 package org.fcrepo.api;
 
 import static org.fcrepo.test.util.PathSegmentImpl.createPathList;
@@ -31,45 +32,49 @@ import org.modeshape.jcr.api.Repository;
 
 public class FedoraChildrenTest {
 
+    FedoraChildren testObj;
 
-	FedoraChildren testObj;
+    ObjectService mockObjects;
 
-	ObjectService mockObjects;
+    DatastreamService mockDatastreams;
 
-	DatastreamService mockDatastreams;
+    Repository mockRepo;
 
-	Repository mockRepo;
+    Session mockSession;
 
-	Session mockSession;
+    LowLevelStorageService mockLow;
 
-	LowLevelStorageService mockLow;
+    @Before
+    public void setUp() throws LoginException, RepositoryException {
+        mockObjects = mock(ObjectService.class);
+        mockDatastreams = mock(DatastreamService.class);
+        mockLow = mock(LowLevelStorageService.class);
+        testObj = new FedoraChildren();
+        testObj.setObjectService(mockObjects);
+        mockSession = TestHelpers.mockSession(testObj);
+        testObj.setSession(mockSession);
+        mockRepo = mock(Repository.class);
+    }
 
-	@Before
-	public void setUp() throws LoginException, RepositoryException {
-		mockObjects = mock(ObjectService.class);
-		mockDatastreams = mock(DatastreamService.class);
-		mockLow = mock(LowLevelStorageService.class);
-		testObj = new FedoraChildren();
-		testObj.setObjectService(mockObjects);
-		mockSession = TestHelpers.mockSession(testObj);
-		mockRepo = mock(Repository.class);
-	}
-
-	@Test
-	public void testGetObjects() throws RepositoryException, IOException {
-		final String pid = "testObject";
-		final String childPid = "testChild";
-		final String path = "/" + pid;
-		final FedoraObject mockObj = mock(FedoraObject.class);
-		when(mockObj.getName()).thenReturn(pid);
-		Set<String> mockNames = new HashSet<String>(Arrays.asList(new String[]{childPid}));
-		when(mockObjects.getObjectNames(mockSession, path)).thenReturn(mockNames);
-		when(mockObjects.getObjectNames(eq(mockSession), eq(path), any(String.class))).thenReturn(mockNames);
-		Response actual = testObj.getObjects(createPathList(pid), null);
-		assertNotNull(actual);
-		String content = (String) actual.getEntity();
-		assertTrue(content, content.contains(childPid));
-		verify(mockSession, never()).save();
-	}
+    @Test
+    public void testGetObjects() throws RepositoryException, IOException {
+        final String pid = "testObject";
+        final String childPid = "testChild";
+        final String path = "/" + pid;
+        final FedoraObject mockObj = mock(FedoraObject.class);
+        when(mockObj.getName()).thenReturn(pid);
+        final Set<String> mockNames =
+                new HashSet<String>(Arrays.asList(new String[] {childPid}));
+        when(mockObjects.getObjectNames(mockSession, path)).thenReturn(
+                mockNames);
+        when(
+                mockObjects.getObjectNames(eq(mockSession), eq(path),
+                        any(String.class))).thenReturn(mockNames);
+        final Response actual = testObj.getObjects(createPathList(pid), "");
+        assertNotNull(actual);
+        final String content = (String) actual.getEntity();
+        assertTrue(content, content.contains(childPid));
+        verify(mockSession, never()).save();
+    }
 
 }
