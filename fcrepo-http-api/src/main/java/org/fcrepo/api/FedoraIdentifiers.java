@@ -36,8 +36,9 @@ import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.update.GraphStoreFactory;
 import org.fcrepo.AbstractResource;
 import org.fcrepo.RdfLexicon;
+import org.fcrepo.session.InjectedSession;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
 import com.codahale.metrics.annotation.Timed;
 
 import java.util.Collection;
@@ -45,13 +46,17 @@ import java.util.List;
 
 /**
  * JAX-RS Resource offering PID creation.
- * 
+ *
  * @author ajs6f
- * 
+ *
  */
 @Component
+@Scope("prototype")
 @Path("/rest/{path: .*}/fcr:pid")
 public class FedoraIdentifiers extends AbstractResource {
+
+    @InjectedSession
+    private Session session;
 
     /**
      * @param numPids number of PIDs to return
@@ -65,8 +70,6 @@ public class FedoraIdentifiers extends AbstractResource {
                                   final Integer numPids,
                               @Context final UriInfo uriInfo) throws RepositoryException {
 
-
-        final Session session = getAuthenticatedSession();
 
         String path = toPath(pathList);
 
@@ -105,4 +108,7 @@ public class FedoraIdentifiers extends AbstractResource {
 
     }
 
+    public void setSession(final Session session) {
+        this.session = session;
+    }
 }

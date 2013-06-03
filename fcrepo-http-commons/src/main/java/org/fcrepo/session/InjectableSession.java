@@ -57,6 +57,7 @@ public class InjectableSession implements Injectable<Session> {
      */
     @Override
     public Session getValue() {
+        logger.debug("get value was called.");
         if (secContext.getUserPrincipal() != null) {
             logger.debug("Returning authenticated Session.");
             sessionFactory.getSession(secContext, request);

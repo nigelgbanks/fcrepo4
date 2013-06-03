@@ -44,7 +44,7 @@ public class FedoraIdentifiersTest {
         mockPidMinter = mock(PidMinter.class);
 
         mockSession = TestHelpers.mockSession(testObj);
-
+        testObj.setSession(mockSession);
         uriInfo = TestHelpers.getUriInfoImpl();
         testObj.setUriInfo(uriInfo);
 
