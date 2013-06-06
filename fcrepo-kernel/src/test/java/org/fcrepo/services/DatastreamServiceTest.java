@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.modeshape.jcr.api.Binary;
-import org.modeshape.jcr.value.binary.StrategyHint;
+
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -37,15 +37,15 @@ import org.powermock.modules.junit4.PowerMockRunner;
 public class DatastreamServiceTest implements FedoraJcrTypes {
 
     private static final String MOCK_CONTENT_TYPE = "application/test-data";
-    
+
     private static final String JCR_CONTENT = "jcr:content";
-    
+
     private static final String JCR_DATA = "jcr:data";
-    
+
     private Session mockSession;
-    
+
     private Node mockRoot;
-    
+
     private DatastreamService testObj;
 
     @Before
@@ -78,13 +78,13 @@ public class DatastreamServiceTest implements FedoraJcrTypes {
 		when(pdp.evaluatePolicies(mockNode)).thenReturn(null);
 		testObj.setStoragePolicyDecisionPoint(pdp);
 		PowerMockito.mockStatic(FedoraTypesUtils.class);
-		when(FedoraTypesUtils.getBinary(eq(mockNode), eq(mockIS), any(StrategyHint.class))).thenReturn(mockBinary);
+		when(FedoraTypesUtils.getBinary(eq(mockNode), eq(mockIS), any(String.class))).thenReturn(mockBinary);
 
         final Node actual =
                 testObj.createDatastreamNode(mockSession, testPath,
                         MOCK_CONTENT_TYPE, mockIS);
         assertEquals(mockNode, actual);
-        
+
         verify(mockContent).setProperty(JCR_DATA, mockBinary);
     }
 

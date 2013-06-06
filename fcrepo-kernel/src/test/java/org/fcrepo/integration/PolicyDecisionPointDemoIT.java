@@ -8,7 +8,6 @@ import org.fcrepo.services.DatastreamService;
 import org.fcrepo.services.ObjectService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.modeshape.jcr.value.binary.NamedHint;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -38,7 +37,7 @@ public class PolicyDecisionPointDemoIT extends AbstractIT {
 		Session session = repo.login();
 
 		PolicyDecisionPoint pt = new PolicyDecisionPoint();
-		pt.addPolicy(new MimeTypePolicy("image/tiff", new NamedHint("tiff-store")));
+		pt.addPolicy(new MimeTypePolicy("image/tiff", "tiff-store"));
 
 		final Node dsNode =
 				datastreamService.createDatastreamNode(session,

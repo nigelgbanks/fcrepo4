@@ -22,11 +22,10 @@ import javax.jcr.nodetype.NodeType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.modeshape.jcr.JcrValueFactory;
-import org.modeshape.jcr.value.binary.StrategyHint;
 
 /**
  * Convenience class with static methods for manipulating Fedora types in the JCR.
- * 
+ *
  * @author ajs6f
  *
  */
@@ -84,7 +83,7 @@ public abstract class FedoraTypesUtils {
     };
 
     /**
-     * Translates a {@link NodeType} to its {@link String} name. 
+     * Translates a {@link NodeType} to its {@link String} name.
      */
     public static Function<NodeType, String> nodetype2name =
             new Function<NodeType, String>() {
@@ -97,7 +96,7 @@ public abstract class FedoraTypesUtils {
             };
 
     /**
-     * Translates a JCR {@link Value} to its {@link String} expression. 
+     * Translates a JCR {@link Value} to its {@link String} expression.
      */
     public static Function<Value, String> value2string =
             new Function<Value, String>() {
@@ -149,7 +148,7 @@ public abstract class FedoraTypesUtils {
 
     /**
      * Creates a JCR {@link Binary}
-     * 
+     *
      * @param n a {@link Node}
      * @param i an {@link InputStream}
      * @return a JCR {@link Binary}
@@ -173,7 +172,7 @@ public abstract class FedoraTypesUtils {
 	 * @param i an {@link InputStream}
 	 * @return a JCR {@link Binary}
 	 */
-	public static Binary getBinary(final Node n, final InputStream i, final StrategyHint hint) {
+	public static Binary getBinary(final Node n, final InputStream i, final String hint) {
 		try {
 			checkArgument(n != null,
 								 "null cannot have a Binary created for it!");
@@ -187,9 +186,9 @@ public abstract class FedoraTypesUtils {
 	}
 
     /**
-     * Convenience method for transforming arrays into 
+     * Convenience method for transforming arrays into
      * {@link Collection}s through a mapping {@link Function}.
-     * 
+     *
      * @param input A Collection<F>.
      * @param f A Function<F,T>.
      * @return An ImmutableSet copy of input after transformation by f

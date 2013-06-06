@@ -37,14 +37,13 @@ import org.fcrepo.utils.ContentDigest;
 import org.fcrepo.utils.FedoraJcrTypes;
 import org.modeshape.jcr.api.Binary;
 import org.modeshape.jcr.api.JcrTools;
-import org.modeshape.jcr.value.binary.StrategyHint;
 import org.slf4j.Logger;
 
 import com.codahale.metrics.Histogram;
 
 /**
  * Abstraction for a Fedora datastream backed by a JCR node.
- * 
+ *
  * @author ajs6f
  *
  */
@@ -135,7 +134,7 @@ public class Datastream extends JcrTools implements FedoraJcrTypes {
             Node contentNode = node.getNode(JCR_CONTENT);
             decorateContentNode(contentNode);
         }
-        
+
     }
 
     /**
@@ -157,7 +156,7 @@ public class Datastream extends JcrTools implements FedoraJcrTypes {
 
     /**
      * Sets the content of this Datastream.
-     * 
+     *
      * @param content
      * @throws RepositoryException
      */
@@ -176,10 +175,10 @@ public class Datastream extends JcrTools implements FedoraJcrTypes {
 
 		node.setProperty(FEDORA_CONTENTTYPE, contentType);
 
-		StrategyHint hint = null;
+		String hint = null;
 
 
-		if(storagePolicyDecisionPoint != null) {
+		if (storagePolicyDecisionPoint != null) {
 			hint = storagePolicyDecisionPoint.evaluatePolicies(node);
 		}
 
@@ -255,7 +254,7 @@ public class Datastream extends JcrTools implements FedoraJcrTypes {
         } catch (RepositoryException e) {
         	logger.error("Could not get content digest - " + e.getMessage());
         }
-        //TODO checksum not stored. recalculating checksum, 
+        //TODO checksum not stored. recalculating checksum,
         //however, this would defeat the purpose validating against the checksum
         Binary binary = (Binary) contentNode.getProperty(JCR_DATA)
         					.getBinary();
@@ -407,7 +406,7 @@ public class Datastream extends JcrTools implements FedoraJcrTypes {
         return getNodePropertySize(node) + getContentSize();
 
     }
-    
+
     private void decorateContentNode(Node contentNode) throws RepositoryException {
         if (contentNode == null) {
             logger.warn("{}/jcr:content appears to be null!");
@@ -429,7 +428,7 @@ public class Datastream extends JcrTools implements FedoraJcrTypes {
 
         logger.debug("Decorated data property at path: " + dataProperty.getPath());
     }
-    
+
     public static boolean hasMixin(Node node) throws RepositoryException {
         NodeType[] nodeTypes = node.getMixinNodeTypes();
         if (nodeTypes == null) return false;

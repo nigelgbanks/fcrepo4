@@ -1,8 +1,6 @@
 package org.fcrepo.binary;
 
 import org.junit.Test;
-import org.modeshape.jcr.value.binary.NamedHint;
-import org.modeshape.jcr.value.binary.StrategyHint;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -19,7 +17,7 @@ import static org.mockito.Mockito.when;
 public class MimeTypePolicyTest {
 	@Test
 	public void shouldEvaluatePolicyAndReturnHint() throws Exception {
-		StrategyHint hint = new NamedHint("store-id");
+		String hint = "store-id";
 		Policy policy = new MimeTypePolicy("image/x-dummy", hint);
 
 		Session mockSession = mock(Session.class);
@@ -31,14 +29,14 @@ public class MimeTypePolicyTest {
 		when(mockProperty.getString()).thenReturn("image/x-dummy");
 		when(mockDsNode.getProperty(FEDORA_CONTENTTYPE)).thenReturn(mockProperty);
 
-		StrategyHint receivedHint = policy.evaluatePolicy(mockDsNode);
+		String receivedHint = policy.evaluatePolicy(mockDsNode);
 
 		assertThat(receivedHint, is(hint));
 	}
 
 	@Test
 	public void shouldEvaluatePolicyAndReturnNoHint() throws Exception {
-		StrategyHint hint = new NamedHint("store-id");
+		String hint = "store-id";
 		Policy policy = new MimeTypePolicy("image/x-dummy", hint);
 
 		Session mockSession = mock(Session.class);
@@ -49,14 +47,14 @@ public class MimeTypePolicyTest {
 		when(mockProperty.getString()).thenReturn("application/x-other");
 		when(mockDsNode.getProperty(FEDORA_CONTENTTYPE)).thenReturn(mockProperty);
 
-		StrategyHint receivedHint = policy.evaluatePolicy(mockDsNode);
+		String receivedHint = policy.evaluatePolicy(mockDsNode);
 
 		assertNull(receivedHint);
 	}
 
 	@Test
 	public void shouldEvaluatePolicyAndReturnNoHintOnException() throws Exception {
-		StrategyHint hint = new NamedHint("store-id");
+		String hint = "store-id";
 		Policy policy = new MimeTypePolicy("image/x-dummy", hint);
 
 		Session mockSession = mock(Session.class);
@@ -64,7 +62,7 @@ public class MimeTypePolicyTest {
 
 		when(mockDsNode.getProperty(FEDORA_CONTENTTYPE)).thenThrow(new RepositoryException());
 
-		StrategyHint receivedHint = policy.evaluatePolicy(mockDsNode);
+		String receivedHint = policy.evaluatePolicy(mockDsNode);
 
 		assertNull(receivedHint);
 	}
