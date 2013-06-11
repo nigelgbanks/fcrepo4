@@ -7,6 +7,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -17,15 +18,17 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.update.GraphStore;
 import org.slf4j.Logger;
 
+
 public class GraphStoreStreamingOutput implements StreamingOutput {
 
     private static final Logger LOGGER =
-            getLogger(GraphStoreStreamingOutput.class);
+        getLogger(GraphStoreStreamingOutput.class);
 
     private final Dataset dataset;
 
     private final String format;
 
+    private final Map<String, String> namespaces;
 
     public GraphStoreStreamingOutput(final GraphStore graphStore,
                                      final MediaType mediaType) {
@@ -33,15 +36,27 @@ public class GraphStoreStreamingOutput implements StreamingOutput {
     }
 
     public GraphStoreStreamingOutput(final Dataset dataset,
-            final MediaType mediaType) {
+                                     final MediaType mediaType) {
+        this(dataset, mediaType, null);
+    }
+
+    public GraphStoreStreamingOutput(final Dataset dataset,
+                                     final MediaType mediaType,
+                                     final Map<String, String> namespaces) {
+        if (namespaces != null) {
+            this.namespaces = namespaces;
+        }
+        else {
+            final Model model = dataset.getDefaultModel();
+            this.namespaces = model.getNsPrefixMap();
+        }
         this.dataset = dataset;
-        format =
-                contentTypeToLang(mediaType.toString()).getName().toUpperCase();
+        this.format = contentTypeToLang(mediaType.toString()).getName().toUpperCase();
     }
 
     @Override
     public void write(final OutputStream out) throws IOException,
-            WebApplicationException {
+                                                     WebApplicationException {
         LOGGER.debug("Serializing graph  as {}", format);
         final Iterator<String> iterator = dataset.listNames();
         LOGGER.debug("Serializing default model");
@@ -51,6 +66,8 @@ public class GraphStoreStreamingOutput implements StreamingOutput {
             LOGGER.debug("Serializing model {}", modelName);
             model = model.union(dataset.getNamedModel(modelName));
         }
+        LOGGER.debug("namespaces {}", namespaces);
+        model.setNsPrefixes(dataset.getDefaultModel().getNsPrefixMap());
         model.write(out, format);
     }
 

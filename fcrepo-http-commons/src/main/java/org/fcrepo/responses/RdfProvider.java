@@ -10,14 +10,22 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.jcr.Session;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import org.fcrepo.session.SessionFactory;
+import org.fcrepo.services.NodeService;
+
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hp.hpl.jena.query.Dataset;
@@ -26,15 +34,34 @@ import com.hp.hpl.jena.query.Dataset;
 @Component
 public class RdfProvider implements MessageBodyWriter<Dataset> {
 
+    @Autowired
+    SessionFactory sessionFactory;
+
+    @Autowired
+    NodeService nodeService;
+
     private static final Logger logger = getLogger(RdfProvider.class);
+
+    private Map<String, String> namespaces;
+
+    @PostConstruct
+    void init() throws IOException, RepositoryException {
+        final Session session = sessionFactory.getSession();
+        try {
+            namespaces = nodeService.getRepositoryNamespaces(session);
+        } finally {
+            session.logout();
+        }
+    }
 
     @Override
     public void writeTo(final Dataset rdf, final Class<?> type,
             final Type genericType, final Annotation[] annotations,
             final MediaType mediaType,
             final MultivaluedMap<String, Object> httpHeaders,
-            final OutputStream entityStream) throws IOException,
-            WebApplicationException {
+            final OutputStream entityStream)
+        throws IOException,
+        WebApplicationException {
 
         logger.debug("Writing a response for: {} with MIMEtype: {}", rdf,
                 mediaType);
@@ -42,9 +69,8 @@ public class RdfProvider implements MessageBodyWriter<Dataset> {
         // add standard headers
         httpHeaders.put("Content-type", of((Object) mediaType.toString()));
         setCachingHeaders(httpHeaders, rdf);
-
-        new GraphStoreStreamingOutput(rdf, mediaType)
-                .write(entityStream);
+        new GraphStoreStreamingOutput(rdf, mediaType, namespaces)
+            .write(entityStream);
     }
 
     @Override

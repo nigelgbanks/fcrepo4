@@ -137,7 +137,9 @@ public class RepositoryService extends JcrTools implements FedoraJcrTypes {
         final Map<String, String> result =
             new HashMap<String, String>(prefixes.length);
         for (final String prefix : reg.getPrefixes()) {
-            result.put(prefix, reg.getURI(prefix));
+            if (!prefix.equals("")) {
+                result.put(prefix, reg.getURI(prefix));
+            }
         }
         return result;
     }
